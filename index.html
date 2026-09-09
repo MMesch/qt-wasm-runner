@@ -81,6 +81,33 @@
       font-size: 16px;
     }
     body.dragging #dropzone { display: flex; }
+    #help {
+      position: fixed;
+      top: 40px; left: 0; right: 0; bottom: 24px;
+      display: none;
+      overflow: auto;
+      padding: 40px 20px;
+      background: #181c28;
+      z-index: 9999;
+    }
+    body.show-help #help { display: block; }
+    #help .inner {
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    #help h1 { font-size: 22px; margin: 0 0 6px; color: #eee; }
+    #help h2 { font-size: 15px; margin: 24px 0 6px; color: #7ac; }
+    #help p, #help li { font-size: 14px; color: #cbd; }
+    #help code {
+      background: #12151d;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #eea;
+    }
+    #help a { color: #7ac; }
+    #help .subtle { opacity: 0.6; font-size: 12px; margin-top: 24px; }
     #screen {
       position: fixed;
       top: 40px; left: 0; right: 0; bottom: 24px;
@@ -107,11 +134,107 @@
     <label for="file" class="fake-btn">Choose file…</label>
     <input id="file" type="file" accept=".tar.bz2,application/x-bzip2,application/x-tar" hidden>
     <button id="reload" onclick="location.reload()">Reload</button>
-    <a href="https://github.com/mmesch/qt-wasm-runner" target="_blank" rel="noopener">source</a>
+    <button id="help-btn" title="Show help">?</button>
+    <a href="https://github.com/MMesch/qt-wasm-runner" target="_blank" rel="noopener">source</a>
   </div>
   <div id="screen"></div>
   <div id="dropzone">Drop a <code>.tar.bz2</code> anywhere</div>
-  <div id="status">Enter a Qt6-wasm package URL, choose a local <code>.tar.bz2</code>, or drop one on the page. See <code>?pkg=</code> query param for deep links.</div>
+  <div id="help">
+    <div class="inner">
+      <h1>qt-wasm-runner</h1>
+      <p>Runs Qt6-wasm apps packaged for
+        <a href="https://emscripten-forge.org/" target="_blank" rel="noopener">emscripten-forge</a>
+        directly in the browser. Nothing is installed; the package is fetched
+        (or read from your disk), unpacked in memory, and handed to Qt's
+        WebAssembly loader.</p>
+
+      <h2>How to load a package</h2>
+      <ul>
+        <li><strong>Paste a URL</strong> to a <code>.tar.bz2</code> package (e.g. from
+          <a href="https://prefix.dev/channels/emscripten-forge-4x-experimental" target="_blank" rel="noopener">prefix.dev/emscripten-forge-4x-experimental</a>)
+          into the top bar and press <em>Run URL</em>.</li>
+        <li><strong>Choose a local file</strong> with the file button.</li>
+        <li><strong>Drag &amp; drop</strong> a <code>.tar.bz2</code> anywhere on the page.</li>
+        <li><strong>Deep-link</strong>: append <code>?pkg=&lt;url-encoded package URL&gt;</code>
+          to auto-load a package on page open.</li>
+      </ul>
+
+      <h2>What it does under the hood</h2>
+      <ol>
+        <li>Decodes <code>.tar.bz2</code> in-browser via
+          <a href="https://www.npmjs.com/package/@emscripten-forge/untarjs" target="_blank" rel="noopener"><code>@emscripten-forge/untarjs</code></a>.</li>
+        <li>Locates the app under <code>share/&lt;name&gt;/</code>
+          (looks for the single <code>*.wasm</code>), then wraps every sibling
+          file (<code>&lt;name&gt;.js</code>, <code>qtloader.js</code>, the wasm blob)
+          as <code>blob:</code> URLs.</li>
+        <li>Loads Qt's <code>qtloader.js</code> and the app's Emscripten glue,
+          then calls <code>qtLoad()</code> with a <code>locateFile</code> hook
+          that resolves further requests to those blob URLs — no more network.</li>
+        <li>Fires a couple of synthetic <code>resize</code> events after boot to
+          work around a Qt6-wasm quirk where the first paint only commits after
+          a resize.</li>
+      </ol>
+
+      <h2>Package requirements</h2>
+      <p>The runner is intentionally strict about layout. A package is
+        runnable if and only if it satisfies:</p>
+      <ul>
+        <li><strong>Format</strong>: <code>.tar.bz2</code> (standard conda
+          package). <code>.conda</code> not yet supported.</li>
+        <li><strong>Layout</strong>: exactly one wasm at
+          <code>share/&lt;appname&gt;/&lt;appname&gt;.wasm</code>, with these
+          three siblings in the same directory:
+          <ul>
+            <li><code>&lt;appname&gt;.js</code> — Emscripten glue built with
+              <code>-sMODULARIZE=1 -sEXPORT_NAME=&lt;appname_underscored&gt;_entry</code>
+              (Qt's <code>qt_add_executable</code> does this by default).</li>
+            <li><code>qtloader.js</code> — Qt's browser boot helper. Shipped
+              automatically by Qt for any wasm-target executable.</li>
+            <li><code>&lt;appname&gt;.wasm</code> — the compiled binary.</li>
+          </ul>
+        </li>
+        <li><strong>Entry export</strong>: the JS glue must expose
+          <code>window.&lt;appname_with_dashes_as_underscores&gt;_entry</code>
+          (e.g. <code>qt-calculator</code> → <code>qt_calculator_entry</code>).
+          This is the default <code>MODULARIZE</code> pattern for
+          <code>qt_add_executable</code>.</li>
+        <li><strong>Linked with JSPI</strong>: <code>-sJSPI=1</code> at final
+          link (Qt propagates this via cmake INTERFACE when qt6 is built with
+          <code>-feature-wasm-jspi</code>, which the
+          <code>emscripten-forge-4x-experimental</code> qt6 is).</li>
+      </ul>
+      <p>The runner discovers <code>&lt;appname&gt;</code> by scanning for the
+        single <code>share/*/*.wasm</code> file in the archive, so you don't
+        pass it separately.</p>
+
+      <h2>Browser requirements</h2>
+      <p>Qt6-wasm on emscripten-forge is built with JavaScript Promise
+        Integration (JSPI) for its event loop. That needs
+        <strong>Chrome 137+</strong>, <strong>Firefox 141+</strong>, or
+        <strong>Safari 18.4+</strong>. Older browsers won't run the demos.</p>
+
+      <h2>Known limitations</h2>
+      <ul>
+        <li><strong>Continuous animation at 60 fps</strong>: timer-driven Qt
+          animations under JSPI can starve the browser main thread. Static and
+          event-driven UIs (calculators, editors, viewers) work fine; games and
+          animated demos need a different tick source
+          (<code>requestAnimationFrame</code> via emscripten C API).</li>
+        <li><strong>Dynamic side-module deps</strong> (e.g. openblas as a
+          runtime <code>.so</code>): not yet supported. The runner only knows
+          about the app's own artifacts today.</li>
+        <li><strong>Only <code>.tar.bz2</code></strong>. <code>.conda</code>
+          format (zstd inside zip) would need additional decoders.</li>
+      </ul>
+
+      <p class="subtle">Runner MIT-licensed. Qt itself is LGPLv3; source and
+        recipes are on
+        <a href="https://github.com/emscripten-forge/recipes" target="_blank" rel="noopener">emscripten-forge/recipes</a>.
+        Source of this runner:
+        <a href="https://github.com/MMesch/qt-wasm-runner" target="_blank" rel="noopener">MMesch/qt-wasm-runner</a>.</p>
+    </div>
+  </div>
+  <div id="status">Loading help — press <kbd>?</kbd> to dismiss and load a package.</div>
 
   <script type="module" src="./runner.js"></script>
 </body>

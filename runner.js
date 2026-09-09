@@ -20,6 +20,17 @@ const screenEl  = document.getElementById("screen");
 const urlInput  = document.getElementById("url");
 const runBtn    = document.getElementById("load");
 const fileInput = document.getElementById("file");
+const helpBtn   = document.getElementById("help-btn");
+
+// Show help by default (nothing loaded); toggle via the ? button or by
+// starting to load a package.
+document.body.classList.add("show-help");
+helpBtn.addEventListener("click", () => {
+  document.body.classList.toggle("show-help");
+});
+function hideHelp() {
+  document.body.classList.remove("show-help");
+}
 
 function setStatus(msg, isError = false) {
   statusEl.textContent = msg;
@@ -60,6 +71,7 @@ function findAppDir(files) {
 // separate methods: extract(url) fetches then extracts, extractData(bytes)
 // works on already-loaded bytes.
 async function run(source, label = String(source)) {
+  hideHelp();
   runBtn.disabled = true;
   try {
     setStatus(`loading ${label}…`);
