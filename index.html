@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>qt-wasm-runner</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: #181c28;
+      color: #ddd;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    #topbar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 10px;
+      background: rgba(30, 34, 46, 0.85);
+      border-bottom: 1px solid #2a2f3f;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 10000;
+      font-size: 13px;
+    }
+    #topbar input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 8px;
+      background: #12151d;
+      color: #ddd;
+      border: 1px solid #3a4050;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    #topbar button {
+      padding: 5px 14px;
+      background: #2a2f3f;
+      color: #ddd;
+      border: 1px solid #3a4050;
+      border-radius: 3px;
+      cursor: pointer;
+      font: inherit;
+    }
+    #topbar button:hover, #topbar .fake-btn:hover { background: #353b4d; }
+    #topbar button:disabled { opacity: 0.5; cursor: default; }
+    #topbar .fake-btn {
+      padding: 5px 14px;
+      background: #2a2f3f;
+      color: #ddd;
+      border: 1px solid #3a4050;
+      border-radius: 3px;
+      cursor: pointer;
+      font: inherit;
+    }
+    #topbar a { color: #7ac; text-decoration: none; font-size: 11px; }
+    #dropzone {
+      position: fixed;
+      top: 40px; left: 0; right: 0; bottom: 24px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #ddd;
+      background: rgba(20, 30, 50, 0.85);
+      border: 3px dashed #4a80b0;
+      z-index: 10001;
+      pointer-events: none;
+    }
+    #dropzone code {
+      background: #12151d;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 16px;
+    }
+    body.dragging #dropzone { display: flex; }
+    #screen {
+      position: fixed;
+      top: 40px; left: 0; right: 0; bottom: 24px;
+      display: block;
+    }
+    #status {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 4px 10px;
+      background: rgba(20, 24, 34, 0.85);
+      border-top: 1px solid #2a2f3f;
+      font-size: 11px;
+      font-family: monospace;
+      opacity: 0.75;
+      z-index: 10000;
+    }
+    #status.error { color: #f77; opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <input id="url" placeholder="package .tar.bz2 URL (e.g. https://repo.prefix.dev/emscripten-forge-4x-experimental/emscripten-wasm32/qt-calculator-...tar.bz2)" spellcheck="false">
+    <button id="load">Run URL</button>
+    <label for="file" class="fake-btn">Choose file…</label>
+    <input id="file" type="file" accept=".tar.bz2,application/x-bzip2,application/x-tar" hidden>
+    <button id="reload" onclick="location.reload()">Reload</button>
+    <a href="https://github.com/mmesch/qt-wasm-runner" target="_blank" rel="noopener">source</a>
+  </div>
+  <div id="screen"></div>
+  <div id="dropzone">Drop a <code>.tar.bz2</code> anywhere</div>
+  <div id="status">Enter a Qt6-wasm package URL, choose a local <code>.tar.bz2</code>, or drop one on the page. See <code>?pkg=</code> query param for deep links.</div>
+
+  <script type="module" src="./runner.js"></script>
+</body>
+</html>
