@@ -108,6 +108,20 @@
     #chrome-toggle:hover, #share-floating:hover { opacity: 1; }
     body.chrome-hidden #chrome-toggle,
     body.chrome-hidden #share-floating { opacity: 0.3; }
+    #hosted-by {
+      position: fixed;
+      bottom: 6px; right: 68px;
+      z-index: 10002;
+      font-size: 11px;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #ddd;
+      opacity: 0.4;
+      transition: opacity 120ms;
+      user-select: none;
+    }
+    #hosted-by:hover { opacity: 1; }
+    #hosted-by a { color: inherit; text-decoration: none; }
+    #hosted-by a:hover { text-decoration: underline; }
     #help {
       position: fixed;
       top: 40px; left: 0; right: 0; bottom: 24px;
@@ -167,6 +181,7 @@
     <a href="https://github.com/MMesch/qt-wasm-runner" target="_blank" rel="noopener">source</a>
   </div>
   <div id="screen"></div>
+  <div id="hosted-by">hosted by <a href="https://emscripten-forge.org/" target="_blank" rel="noopener">emscripten-forge</a></div>
   <button id="share-floating" title="Copy shareable URL" aria-label="Share">↗</button>
   <button id="chrome-toggle" title="Toggle top/status bars (F)" aria-label="Toggle chrome">⛶</button>
   <div id="dropzone">Drop a <code>.tar.bz2</code> anywhere</div>
