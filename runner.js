@@ -158,9 +158,21 @@ async function runFromFile(file) {
 }
 
 // UI wiring.
+// Clicking Run navigates to ?pkg=<url> and lets the page-load path boot
+// the app. Two reasons over calling run() directly: (1) a second load
+// after the first would leave the previous wasm module alive and racing
+// the new one, and (2) the URL bar always reflects the current package
+// without extra bookkeeping.
 runBtn.addEventListener("click", () => {
   const url = urlInput.value.trim();
-  if (url) run(url);
+  if (!url) return;
+  const params = new URLSearchParams();
+  params.set("pkg", url);
+  const target = "?" + params.toString();
+  // If the URL didn't change (user re-clicked with same URL), force a
+  // reload; otherwise a navigation to the same href is a no-op.
+  if (location.search === target) location.reload();
+  else location.search = target;
 });
 urlInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") runBtn.click();
