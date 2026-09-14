@@ -183,17 +183,29 @@ fileInput.addEventListener("change", () => {
   if (file) runFromFile(file);
 });
 
-// Full-page drag & drop.
+// Full-page drag & drop. Only intercepts when the drag actually contains
+// a file — text/URL drops (e.g. dragging a URL from the browser's URL bar
+// into our input) fall through to the browser's native behavior.
+function isFileDrag(e) {
+  const types = e.dataTransfer?.types;
+  return types && Array.from(types).includes("Files");
+}
+function isInInput(e) {
+  return e.target === urlInput;
+}
 let dragDepth = 0;
 window.addEventListener("dragenter", (e) => {
+  if (isInInput(e) || !isFileDrag(e)) return;
   e.preventDefault();
   if (++dragDepth === 1) document.body.classList.add("dragging");
 });
 window.addEventListener("dragover", (e) => {
+  if (isInInput(e) || !isFileDrag(e)) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = "copy";
 });
 window.addEventListener("dragleave", (e) => {
+  if (isInInput(e) || !isFileDrag(e)) return;
   e.preventDefault();
   if (--dragDepth <= 0) {
     dragDepth = 0;
@@ -201,6 +213,7 @@ window.addEventListener("dragleave", (e) => {
   }
 });
 window.addEventListener("drop", (e) => {
+  if (isInInput(e) || !isFileDrag(e)) return;
   e.preventDefault();
   dragDepth = 0;
   document.body.classList.remove("dragging");
