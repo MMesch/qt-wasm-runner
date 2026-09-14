@@ -21,6 +21,7 @@ const urlInput  = document.getElementById("url");
 const runBtn    = document.getElementById("load");
 const fileInput = document.getElementById("file");
 const helpBtn   = document.getElementById("help-btn");
+const shareBtn  = document.getElementById("share");
 
 // Show help by default (nothing loaded); toggle via the ? button or by
 // starting to load a package.
@@ -73,6 +74,16 @@ function findAppDir(files) {
 async function run(source, label = String(source)) {
   hideHelp();
   runBtn.disabled = true;
+
+  // Reflect the current package URL in location.search so the address bar
+  // is always a shareable deep-link. Only makes sense for URL-based loads;
+  // for file/drop there's nothing to link to.
+  if (typeof source === "string") {
+    const params = new URLSearchParams(location.search);
+    params.set("pkg", source);
+    history.replaceState(null, "", "?" + params.toString());
+  }
+
   try {
     setStatus(`loading ${label}…`);
 
@@ -183,6 +194,25 @@ window.addEventListener("drop", (e) => {
   document.body.classList.remove("dragging");
   const file = e.dataTransfer?.files?.[0];
   if (file) runFromFile(file);
+});
+
+// Share button — copies the current URL to clipboard. When a package is
+// loaded (either via ?pkg= deep-link or by pressing Run URL), the URL bar
+// already contains a deep-link to the exact package thanks to the
+// history.replaceState call in run(). If nothing is loaded, we still copy
+// the base runner URL (useful for sharing the runner itself).
+shareBtn.addEventListener("click", async () => {
+  const url = location.href;
+  try {
+    await navigator.clipboard.writeText(url);
+    const params = new URLSearchParams(location.search);
+    const msg = params.has("pkg")
+      ? "shareable link copied to clipboard"
+      : "runner URL copied (no package loaded)";
+    setStatus(msg);
+  } catch (err) {
+    setStatus(`clipboard write failed: ${err.message ?? err}`, true);
+  }
 });
 
 // Deep-link support: ?pkg=<url> autostarts.
