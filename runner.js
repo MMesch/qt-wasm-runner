@@ -174,6 +174,14 @@ runBtn.addEventListener("click", () => {
   if (location.search === target) location.reload();
   else location.search = target;
 });
+// Qt-wasm's qtloader.js installs document-level keyboard/input listeners
+// that swallow events (paste, Ctrl+V, arrow keys, etc.) before they reach
+// DOM inputs outside its canvas. Stop propagation at capture phase on
+// every keyboard/clipboard event targeting our URL input so it behaves
+// like a normal text field even while a Qt app is running.
+["keydown", "keyup", "keypress", "input", "beforeinput", "paste", "cut", "copy"].forEach((evt) => {
+  urlInput.addEventListener(evt, (e) => e.stopPropagation(), true);
+});
 urlInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") runBtn.click();
 });
