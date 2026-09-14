@@ -256,7 +256,7 @@ document.addEventListener("keydown", (e) => {
 // already contains a deep-link to the exact package thanks to the
 // history.replaceState call in run(). If nothing is loaded, we still copy
 // the base runner URL (useful for sharing the runner itself).
-shareBtn.addEventListener("click", async () => {
+async function copyShareLink() {
   const url = location.href;
   try {
     await navigator.clipboard.writeText(url);
@@ -268,7 +268,9 @@ shareBtn.addEventListener("click", async () => {
   } catch (err) {
     setStatus(`clipboard write failed: ${err.message ?? err}`, true);
   }
-});
+}
+shareBtn.addEventListener("click", copyShareLink);
+document.getElementById("share-floating").addEventListener("click", copyShareLink);
 
 // Deep-link support: ?pkg=<url> autostarts; ?fullscreen=1 boots with the
 // top/status bars hidden for embed-like use.
