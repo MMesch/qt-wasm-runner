@@ -291,10 +291,12 @@ document.getElementById("share-floating").addEventListener("click", copyShareLin
 
 // Exit — navigate to the base URL (no query params). Drops the running
 // app, chrome-hidden state, and any deep-link params. The fresh page load
-// lands on the initial state: chrome visible, help panel open.
-document.getElementById("exit").addEventListener("click", () => {
-  location.href = location.pathname;
-});
+// lands on the initial state: chrome visible, help panel open. Wired to
+// both the topbar Exit button and the floating × in the corner (which is
+// the only reachable Exit while in fullscreen mode).
+function doExit() { location.href = location.pathname; }
+document.getElementById("exit").addEventListener("click", doExit);
+document.getElementById("exit-floating").addEventListener("click", doExit);
 
 // Deep-link support: ?pkg=<url> autostarts; ?fullscreen=1 boots with the
 // top/status bars hidden for embed-like use.

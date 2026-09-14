@@ -87,7 +87,7 @@
     body.chrome-hidden #topbar,
     body.chrome-hidden #status { display: none; }
     body.chrome-hidden #screen { top: 0; bottom: 0; }
-    #chrome-toggle, #share-floating {
+    #chrome-toggle, #share-floating, #exit-floating {
       position: fixed;
       bottom: 4px;
       z-index: 10002;
@@ -105,12 +105,14 @@
     }
     #chrome-toggle { right: 4px; }
     #share-floating { right: 34px; }
-    #chrome-toggle:hover, #share-floating:hover { opacity: 1; }
+    #exit-floating { right: 64px; }
+    #chrome-toggle:hover, #share-floating:hover, #exit-floating:hover { opacity: 1; }
     body.chrome-hidden #chrome-toggle,
-    body.chrome-hidden #share-floating { opacity: 0.3; }
+    body.chrome-hidden #share-floating,
+    body.chrome-hidden #exit-floating { opacity: 0.3; }
     #hosted-by {
       position: fixed;
-      bottom: 6px; right: 68px;
+      bottom: 6px; right: 98px;
       z-index: 10002;
       font-size: 11px;
       font-family: system-ui, -apple-system, sans-serif;
@@ -182,6 +184,7 @@
   </div>
   <div id="screen"></div>
   <div id="hosted-by">hosted by <a href="https://emscripten-forge.org/" target="_blank" rel="noopener">emscripten-forge</a></div>
+  <button id="exit-floating" title="Unload current app" aria-label="Exit">×</button>
   <button id="share-floating" title="Copy shareable URL" aria-label="Share">↗</button>
   <button id="chrome-toggle" title="Toggle top/status bars (F)" aria-label="Toggle chrome">⛶</button>
   <div id="dropzone">Drop a <code>.tar.bz2</code> anywhere</div>
