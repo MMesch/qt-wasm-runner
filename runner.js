@@ -196,6 +196,23 @@ window.addEventListener("drop", (e) => {
   if (file) runFromFile(file);
 });
 
+// Chrome-hide toggle — collapses top/status bars for maximum app real
+// estate. The toggle button itself stays visible in the corner. Also
+// bound to the F key (skip when typing into an input).
+const chromeToggle = document.getElementById("chrome-toggle");
+function toggleChrome() {
+  document.body.classList.toggle("chrome-hidden");
+  // After a hide/show the widget below may need a repaint prompt.
+  window.dispatchEvent(new Event("resize"));
+}
+chromeToggle.addEventListener("click", toggleChrome);
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "f" && e.key !== "F") return;
+  if (e.target.matches("input, textarea")) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  toggleChrome();
+});
+
 // Share button — copies the current URL to clipboard. When a package is
 // loaded (either via ?pkg= deep-link or by pressing Run URL), the URL bar
 // already contains a deep-link to the exact package thanks to the

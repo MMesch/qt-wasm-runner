@@ -81,6 +81,30 @@
       font-size: 16px;
     }
     body.dragging #dropzone { display: flex; }
+
+    /* Chrome-hidden mode: collapse topbar + status so the app gets the
+       full viewport. Toggle button stays visible so users can un-hide. */
+    body.chrome-hidden #topbar,
+    body.chrome-hidden #status { display: none; }
+    body.chrome-hidden #screen { top: 0; bottom: 0; }
+    #chrome-toggle {
+      position: fixed;
+      bottom: 4px; right: 4px;
+      z-index: 10002;
+      width: 26px; height: 26px;
+      padding: 0;
+      background: rgba(30, 34, 46, 0.35);
+      color: #ddd;
+      border: 1px solid rgba(80, 100, 130, 0.4);
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 24px;
+      opacity: 0.4;
+      transition: opacity 120ms;
+    }
+    #chrome-toggle:hover { opacity: 1; }
+    body.chrome-hidden #chrome-toggle { bottom: 4px; opacity: 0.3; }
     #help {
       position: fixed;
       top: 40px; left: 0; right: 0; bottom: 24px;
@@ -139,6 +163,7 @@
     <a href="https://github.com/MMesch/qt-wasm-runner" target="_blank" rel="noopener">source</a>
   </div>
   <div id="screen"></div>
+  <button id="chrome-toggle" title="Toggle top/status bars (F)" aria-label="Toggle chrome">⛶</button>
   <div id="dropzone">Drop a <code>.tar.bz2</code> anywhere</div>
   <div id="help">
     <div class="inner">
