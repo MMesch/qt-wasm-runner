@@ -232,7 +232,14 @@ window.addEventListener("drop", (e) => {
 // bound to the F key (skip when typing into an input).
 const chromeToggle = document.getElementById("chrome-toggle");
 function toggleChrome() {
-  document.body.classList.toggle("chrome-hidden");
+  const hidden = document.body.classList.toggle("chrome-hidden");
+  // Reflect the state in the URL so it survives reloads and is included
+  // when the user hits Share.
+  const params = new URLSearchParams(location.search);
+  if (hidden) params.set("fullscreen", "1");
+  else params.delete("fullscreen");
+  const search = params.toString();
+  history.replaceState(null, "", search ? "?" + search : location.pathname);
   // After a hide/show the widget below may need a repaint prompt.
   window.dispatchEvent(new Event("resize"));
 }
@@ -263,8 +270,12 @@ shareBtn.addEventListener("click", async () => {
   }
 });
 
-// Deep-link support: ?pkg=<url> autostarts.
+// Deep-link support: ?pkg=<url> autostarts; ?fullscreen=1 boots with the
+// top/status bars hidden for embed-like use.
 const params = new URLSearchParams(location.search);
+if (params.get("fullscreen") === "1") {
+  document.body.classList.add("chrome-hidden");
+}
 const pkgUrl = params.get("pkg");
 if (pkgUrl) {
   urlInput.value = pkgUrl;
