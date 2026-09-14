@@ -256,15 +256,32 @@ document.addEventListener("keydown", (e) => {
 // already contains a deep-link to the exact package thanks to the
 // history.replaceState call in run(). If nothing is loaded, we still copy
 // the base runner URL (useful for sharing the runner itself).
+// Share the current URL. Prefer the Web Share API (opens native share
+// sheet: email, messaging apps, etc.), fall back to clipboard copy.
 async function copyShareLink() {
   const url = location.href;
+  const params = new URLSearchParams(location.search);
+  const hasPkg = params.has("pkg");
+  const title = hasPkg
+    ? "Qt6 wasm app on qt-wasm-runner"
+    : "qt-wasm-runner";
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, url });
+      return;   // user picked a target or dismissed — either way, done
+    } catch (err) {
+      // AbortError = user cancelled the share sheet; treat as no-op.
+      if (err && err.name === "AbortError") return;
+      // Any other error (e.g., permission denied) — fall through to clipboard.
+    }
+  }
+
   try {
     await navigator.clipboard.writeText(url);
-    const params = new URLSearchParams(location.search);
-    const msg = params.has("pkg")
+    setStatus(hasPkg
       ? "shareable link copied to clipboard"
-      : "runner URL copied (no package loaded)";
-    setStatus(msg);
+      : "runner URL copied (no package loaded)");
   } catch (err) {
     setStatus(`clipboard write failed: ${err.message ?? err}`, true);
   }
