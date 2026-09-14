@@ -73,7 +73,6 @@ function findAppDir(files) {
 // works on already-loaded bytes.
 async function run(source, label = String(source)) {
   hideHelp();
-  runBtn.disabled = true;
 
   // Reflect the current package URL in location.search so the address bar
   // is always a shareable deep-link. Only makes sense for URL-based loads;
@@ -147,7 +146,6 @@ async function run(source, label = String(source)) {
   } catch (err) {
     console.error(err);
     setStatus(`error: ${err.message ?? err}`, true);
-    runBtn.disabled = false;
   }
 }
 
